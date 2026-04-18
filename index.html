@@ -1,0 +1,623 @@
+<!DOCTYPE html>  
+<!-- 
+Copyright © 2026 Shane Yeman. All rights reserved.
+VoxPopuli Direct Democracy App - Single-File HTML/JavaScript Prototype
+Version 1.0
+This code is protected by copyright law. Unauthorized copying, modification, or distribution is prohibited.
+-->
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>VoxPopuli • Direct Democracy</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>  
+    <style>  
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');  
+        :root {  
+            --tw-color-primary: #00ff9d;  
+        }  
+        body {  
+            font-family: 'Inter', system_ui, sans-serif;  
+        }  
+        .heading-font {  
+            font-family: 'Space Grotesk', sans-serif;  
+        }  
+        .app-container {  
+            background: linear-gradient(180deg, #0a0a0a 0%, #111111 100%);  
+        }  
+        .vote-bar {  
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);  
+        }  
+        .live-dot {  
+            animation: pulse 2s infinite;  
+        }  
+    </style>  
+</head>  
+<body class="app-container text-white min-h-screen">  
+    <!-- NAVBAR -->  
+    <nav class="bg-black border-b border-[#00ff9d]/20 sticky top-0 z-50">  
+        <div class="max-w-screen-2xl mx-auto px-8 py-5 flex items-center justify-between">  
+            <div class="flex items-center gap-x-3">  
+                <div class="w-9 h-9 bg-[#00ff9d] rounded-2xl flex items-center justify-center text-black text-2xl font-bold rotate-12">📢</div>  
+                <h1 class="heading-font text-3xl tracking-tighter">VoxPopuli</h1>  
+                <span class="text-xs px-3 py-1 bg-[#00ff9d]/10 text-[#00ff9d] rounded-3xl font-medium">LIVE • DIRECT DEMOCRACY</span>  
+            </div>  
+              
+            <div class="flex items-center gap-x-8 text-sm font-medium">  
+                <a onclick="navigate(0)" class="cursor-pointer hover:text-[#00ff9d] flex items-center gap-x-1" id="nav-0">  
+                    <span>🏠</span> Dashboard  
+                </a>  
+                <a onclick="navigate(1)" class="cursor-pointer hover:text-[#00ff9d] flex items-center gap-x-1" id="nav-1">  
+                    <span>📋</span> Proposals  
+                </a>  
+                <a onclick="navigate(2)" class="cursor-pointer hover:text-[#00ff9d] flex items-center gap-x-1" id="nav-2">  
+                    <span>🗳️</span> My Votes  
+                </a>  
+                <a onclick="navigate(3)" class="cursor-pointer hover:text-[#00ff9d] flex items-center gap-x-1" id="nav-3">  
+                    <span>✍️</span> Submit  
+                </a>  
+                  
+                <div class="flex items-center gap-x-3 bg-white/5 px-4 h-10 rounded-3xl">  
+                    <div class="flex items-center">  
+                        <div class="w-2 h-2 bg-green-400 rounded-full live-dot"></div>  
+                        <span class="ml-1.5 text-xs font-medium text-green-400">Verified Citizen</span>  
+                    </div>  
+                    <div class="text-sm font-mono text-[#00ff9d]">nesha.kc • MO</div>  
+                    <button onclick="logout()"   
+                            class="text-xs bg-white/10 hover:bg-white/20 px-4 h-7 rounded-2xl transition-colors">  
+                        LOGOUT  
+                    </button>  
+                </div>  
+            </div>  
+        </div>  
+    </nav>  
+  
+    <!-- HERO / DASHBOARD -->  
+    <div id="screen-0" class="max-w-screen-2xl mx-auto px-8 py-10">  
+        <div class="flex justify-between items-end mb-8">  
+            <div>  
+                <h2 class="heading-font text-6xl tracking-tighter">Welcome back, Nesha.<br>Your voice runs the country.</h2>  
+                <p class="text-[#00ff9d] text-xl mt-2">Missouri • 1,847,392 citizens currently online voting</p>  
+            </div>  
+              
+            <div class="text-right">  
+                <div class="inline-flex items-center gap-x-2 bg-white/5 rounded-3xl px-6 py-3 text-sm">  
+                    <span class="text-green-400">● LIVE</span>  
+                    <span class="font-mono">National Referendum Turnout: 68% (↑14% this month)</span>  
+                </div>  
+                <p class="text-xs text-gray-400 mt-1">Next vote closes in 41 hours</p>  
+            </div>  
+        </div>  
+  
+        <!-- QUICK STATS -->  
+        <div class="grid grid-cols-4 gap-6 mb-12">  
+            <div class="bg-white/5 rounded-3xl p-6">  
+                <div class="text-xs uppercase tracking-widest mb-2 text-gray-400">Active Proposals</div>  
+                <div class="text-5xl font-semibold heading-font" id="stat-active">17</div>  
+                <div class="text-[#00ff9d] text-sm flex items-center gap-x-1 mt-4">  
+                    <span>4 new today</span>  
+                </div>  
+            </div>  
+            <div class="bg-white/5 rounded-3xl p-6">  
+                <div class="text-xs uppercase tracking-widest mb-2 text-gray-400">Laws Passed This Year</div>  
+                <div class="text-5xl font-semibold heading-font" id="stat-passed">92</div>  
+                <div class="flex items-center gap-x-3 text-sm mt-4">  
+                    <div class="h-2 flex-1 bg-[#00ff9d] rounded-full"></div>  
+                    <div class="text-xs font-medium">Direct citizen laws</div>  
+                </div>  
+            </div>  
+            <div class="bg-white/5 rounded-3xl p-6">  
+                <div class="text-xs uppercase tracking-widest mb-2 text-gray-400">Your Delegation Power</div>  
+                <div class="text-5xl font-semibold heading-font">4,291</div>  
+                <div class="text-xs text-gray-400">people have delegated votes to you</div>  
+                <button onclick="delegateDemo()" class="mt-4 text-xs border border-[#00ff9d] text-[#00ff9d] px-5 py-2 rounded-3xl hover:bg-[#00ff9d] hover:text-black transition-all">  
+                    MANAGE DELEGATIONS  
+                </button>  
+            </div>  
+            <div class="bg-white/5 rounded-3xl p-6 flex flex-col justify-between">  
+                <div>  
+                    <div class="text-xs uppercase tracking-widest mb-2 text-gray-400">AI Policy Summary</div>  
+                    <p class="text-sm leading-tight">Today's top issue: Universal basic services pilot in 12 states. 61% support after reading the 3-page summary.</p>  
+                </div>  
+                <button onclick="showAISummary()" class="text-[#00ff9d] text-sm font-medium flex items-center gap-x-2">  
+                    READ FULL AI BRIEF →  
+                </button>  
+            </div>  
+        </div>  
+  
+        <!-- TRENDING PROPOSALS -->  
+        <h3 class="uppercase text-xs tracking-[2px] mb-4 flex items-center gap-x-2">  
+            <span class="text-[#00ff9d]">🔥</span> TRENDING NATIONWIDE  
+        </h3>  
+        <div class="grid grid-cols-3 gap-6" id="trending-grid">  
+            <!-- Populated by JS -->  
+        </div>  
+    </div>  
+  
+    <!-- PROPOSALS LIST -->  
+    <div id="screen-1" class="max-w-screen-2xl mx-auto px-8 py-10 hidden">  
+        <h2 class="heading-font text-5xl mb-8">All Active Proposals</h2>  
+        <div class="flex gap-x-4 mb-8">  
+            <button onclick="filterProposals('all')" class="active-filter px-8 py-3 rounded-3xl border border-white/30 text-sm font-medium">All</button>  
+            <button onclick="filterProposals('law')" class="px-8 py-3 rounded-3xl border border-white/30 text-sm font-medium">New Laws</button>  
+            <button onclick="filterProposals('budget')" class="px-8 py-3 rounded-3xl border border-white/30 text-sm font-medium">Budgets</button>  
+            <button onclick="filterProposals('rights')" class="px-8 py-3 rounded-3xl border border-white/30 text-sm font-medium">Rights &amp; Liberties</button>  
+        </div>  
+        <div class="space-y-6" id="proposals-list">  
+            <!-- Populated by JS -->  
+        </div>  
+    </div>  
+  
+    <!-- MY VOTES -->  
+    <div id="screen-2" class="max-w-screen-2xl mx-auto px-8 py-10 hidden">  
+        <h2 class="heading-font text-5xl mb-8">Your Voting Record</h2>  
+        <div id="my-votes-list" class="space-y-8">  
+            <!-- Populated by JS -->  
+        </div>  
+    </div>  
+  
+    <!-- SUBMIT PROPOSAL -->  
+    <div id="screen-3" class="max-w-screen-2xl mx-auto px-8 py-10 hidden">  
+        <div class="max-w-2xl mx-auto">  
+            <h2 class="heading-font text-5xl mb-8 text-center">Submit a New Proposal</h2>  
+            <div class="bg-white/5 rounded-3xl p-10">  
+                <form onsubmit="submitProposal(event)" id="submit-form">  
+                    <div class="mb-6">  
+                        <label class="block text-xs uppercase mb-2">Proposal Title</label>  
+                        <input type="text" id="prop-title" required   
+                               class="w-full bg-transparent border border-white/30 focus:border-[#00ff9d] rounded-3xl px-8 py-6 text-xl placeholder:text-white/40 outline-none">  
+                    </div>  
+                    <div class="mb-6">  
+                        <label class="block text-xs uppercase mb-2">Category</label>  
+                        <select id="prop-category" class="w-full bg-transparent border border-white/30 focus:border-[#00ff9d] rounded-3xl px-8 py-6 text-xl outline-none">  
+                            <option>New Law</option>  
+                            <option>Budget Allocation</option>  
+                            <option>Rights Amendment</option>  
+                            <option>Foreign Policy</option>  
+                            <option>Environment</option>  
+                        </select>  
+                    </div>  
+                    <div class="mb-8">  
+                        <label class="block text-xs uppercase mb-2">Full Text or Summary (max 500 words)</label>  
+                        <textarea id="prop-text" rows="8" required  
+                                  class="w-full bg-transparent border border-white/30 focus:border-[#00ff9d] rounded-3xl px-8 py-6 text-lg outline-none resize-y"></textarea>  
+                    </div>  
+                    <div class="flex justify-between items-center">  
+                        <div class="text-xs text-gray-400">This will go live for nationwide vote after 500 verified co-signers (you already have 87)</div>  
+                        <button type="submit"   
+                                class="bg-[#00ff9d] text-black font-semibold px-12 py-6 rounded-3xl text-xl hover:scale-105 transition-transform">  
+                            PUBLISH TO THE NATION →  
+                        </button>  
+                    </div>  
+                </form>  
+            </div>  
+        </div>  
+    </div>  
+  
+    <!-- PROPOSAL MODAL -->  
+    <div onclick="if(event.target.id === 'modal-backdrop')hideModal()"   
+         id="modal-backdrop"  
+         class="hidden fixed inset-0 bg-black/80 backdrop-blur-xl z-[9999] flex items-center justify-center">  
+        <div onclick="event.stopImmediatePropagation()"   
+             class="bg-[#111] rounded-3xl max-w-4xl w-full mx-8 max-h-[90vh] overflow-hidden">  
+            <div class="p-8 border-b border-white/10 flex justify-between items-center">  
+                <h2 id="modal-title" class="heading-font text-3xl"></h2>  
+                <button onclick="hideModal()" class="text-4xl leading-none text-gray-400">×</button>  
+            </div>  
+              
+            <div class="p-8 overflow-auto max-h-[calc(90vh-140px)]" id="modal-content">  
+                <div id="modal-description" class="prose prose-invert text-lg"></div>  
+                  
+                <!-- Live results chart -->  
+                <div class="mt-12">  
+                    <div class="flex justify-between text-xs uppercase mb-4">  
+                        <div>Current Results • <span id="modal-voters" class="font-mono"></span> citizens voted</div>  
+                        <div class="text-[#00ff9d]">Closes in <span id="modal-time">41h 12m</span></div>  
+                    </div>  
+                    <canvas id="modal-chart" height="120"></canvas>  
+                </div>  
+  
+                <!-- Debate -->  
+                <div class="mt-12">  
+                    <h4 class="uppercase text-xs mb-6">Live Debate • 1,284 comments</h4>  
+                    <div id="modal-comments" class="space-y-8 text-sm">  
+                        <!-- JS populated -->  
+                    </div>  
+                </div>  
+            </div>  
+              
+            <div class="border-t border-white/10 p-8 flex gap-x-4">  
+                <button onclick="castVote('yes')"   
+                        class="flex-1 bg-green-500 hover:bg-green-600 text-black py-6 rounded-3xl text-2xl font-semibold transition-colors">  
+                    YES 👍  
+                </button>  
+                <button onclick="castVote('no')"   
+                        class="flex-1 bg-red-500 hover:bg-red-600 text-black py-6 rounded-3xl text-2xl font-semibold transition-colors">  
+                    NO 👎  
+                </button>  
+                <button onclick="castVote('abstain')"   
+                        class="flex-1 bg-white/10 hover:bg-white/20 py-6 rounded-3xl text-2xl font-semibold transition-colors">  
+                    ABSTAIN  
+                </button>  
+            </div>  
+        </div>  
+    </div>  
+  
+    <script>  
+        // Tailwind script already loaded  
+        function initTailwind() {  
+            tailwind.config = {  
+                content: [],  
+                theme: {  
+                    extend: {}  
+                }  
+            }  
+        }  
+  
+        // Fake database  
+        let currentUser = { name: "Nesha", state: "MO", verified: true }  
+        let proposals = [  
+            {  
+                id: 1,  
+                title: "Establish nationwide high-speed rail network funded by carbon tax",  
+                category: "law",  
+                description: "Build 18,000 miles of rail connecting every major city. Phase 1 completed by 2032. Estimated cost: $1.2T over 10 years.",  
+                yes: 1423891,  
+                no: 892341,  
+                abstain: 312456,  
+                voted: false,  
+                voteChoice: null,  
+                comments: [  
+                    { user: "Alex from TX", text: "This would cut emissions by 40%. Finally!", time: "2h" },  
+                    { user: "Maria in CA", text: "Great idea but how do we pay without raising taxes on working families?", time: "47m" }  
+                ]  
+            },  
+            {  
+                id: 2,  
+                title: "Legalize recreational cannabis federally and expunge prior convictions",  
+                category: "rights",  
+                description: "Full federal legalization + automatic expungement for non-violent cannabis offenses. States retain local control on taxation.",  
+                yes: 2841092,  
+                no: 671234,  
+                abstain: 198765,  
+                voted: true,  
+                voteChoice: "yes",  
+                comments: [  
+                    { user: "Jordan KC", text: "Missouri would benefit hugely from this tax revenue.", time: "11h" }  
+                ]  
+            },  
+            {  
+                id: 3,  
+                title: "Allocate $400B for AI safety research and universal compute access",  
+                category: "budget",  
+                description: "Create a sovereign AI fund. Every citizen gets 100 free GPU hours/month through public cloud.",  
+                yes: 984321,  
+                no: 1245678,  
+                abstain: 456789,  
+                voted: false,  
+                voteChoice: null,  
+                comments: []  
+            },  
+            {  
+                id: 4,  
+                title: "Term limits for all federal judges including Supreme Court",  
+                category: "rights",  
+                description: "18-year non-renewable terms. Staggered implementation starting 2027.",  
+                yes: 1876543,  
+                no: 765432,  
+                abstain: 234567,  
+                voted: false,  
+                voteChoice: null,  
+                comments: []  
+            }  
+        ]  
+  
+        let myVotes = []  
+  
+        // Render trending cards on dashboard  
+        function renderTrending() {  
+            const container = document.getElementById('trending-grid')  
+            container.innerHTML = ''  
+              
+            proposals.slice(0, 3).forEach(p => {  
+                const total = p.yes + p.no + p.abstain  
+                const yesPct = Math.round(p.yes / total * 100)  
+                  
+                const card = document.createElement('div')  
+                card.className = "bg-white/5 hover:bg-white/10 rounded-3xl p-6 cursor-pointer transition-all hover:scale-[1.02]"  
+                card.innerHTML = `  
+                    <div class="flex justify-between text-xs uppercase mb-3">  
+                        <span class="px-4 py-1 bg-white/10 rounded-3xl">${p.category}</span>  
+                        <span class="text-[#00ff9d]">${yesPct}% YES</span>  
+                    </div>  
+                    <h4 class="font-semibold text-xl leading-tight mb-6">${p.title}</h4>  
+                    <div class="h-2 bg-white/10 rounded-3xl overflow-hidden mb-4">  
+                        <div class="vote-bar h-2 bg-[#00ff9d]" style="width: ${yesPct}%"></div>  
+                    </div>  
+                    <div class="flex justify-between text-xs">  
+                        <div>${p.yes.toLocaleString()} yes</div>  
+                        <div class="text-gray-400">${total.toLocaleString()} votes</div>  
+                    </div>  
+                `  
+                card.onclick = () => showProposalModal(p.id)  
+                container.appendChild(card)  
+            })  
+        }  
+  
+        // Render full proposals list  
+        function renderProposals(filtered = 'all') {  
+            const container = document.getElementById('proposals-list')  
+            container.innerHTML = ''  
+              
+            const filteredProposals = filtered === 'all'   
+                ? proposals   
+                : proposals.filter(p => p.category === filtered)  
+              
+            filteredProposals.forEach(p => {  
+                const total = p.yes + p.no + p.abstain  
+                const yesPct = Math.round((p.yes / total) * 100) || 0  
+                  
+                const el = document.createElement('div')  
+                el.className = "bg-white/5 rounded-3xl p-8 flex gap-8 items-center hover:bg-white/10 cursor-pointer"  
+                el.innerHTML = `  
+                    <div class="flex-1">  
+                        <div class="flex items-center gap-x-3 text-xs mb-3">  
+                            <span class="px-5 py-1 rounded-3xl bg-white/10">${p.category.toUpperCase()}</span>  
+                            ${p.voted ? `<span class="text-green-400 font-medium">✓ YOU VOTED ${p.voteChoice.toUpperCase()}</span>` : ''}  
+                        </div>  
+                        <h3 class="text-2xl font-medium leading-tight">${p.title}</h3>  
+                        <p class="text-gray-400 mt-4 line-clamp-2">${p.description}</p>  
+                    </div>  
+                    <div class="w-64">  
+                        <div class="flex justify-between text-xs mb-2">  
+                            <span>YES</span>  
+                            <span class="font-mono">${yesPct}%</span>  
+                        </div>  
+                        <div class="h-3 bg-white/10 rounded-3xl mb-8">  
+                            <div class="vote-bar h-3 bg-[#00ff9d]" style="width: ${yesPct}%"></div>  
+                        </div>  
+                        <button onclick="event.stopImmediatePropagation();showProposalModal(${p.id});"   
+                                class="w-full py-4 text-sm font-semibold border border-[#00ff9d] text-[#00ff9d] rounded-3xl hover:bg-[#00ff9d] hover:text-black">  
+                            VOTE NOW  
+                        </button>  
+                    </div>  
+                `  
+                container.appendChild(el)  
+            })  
+              
+            if (filteredProposals.length === 0) {  
+                container.innerHTML = `<div class="text-center py-20 text-gray-400">No proposals in this category yet.</div>`  
+            }  
+        }  
+  
+        // Render my votes screen  
+        function renderMyVotes() {  
+            const container = document.getElementById('my-votes-list')  
+            container.innerHTML = `<div class="text-2xl font-light text-gray-400">You have cast <span class="text-white">${myVotes.length + proposals.filter(p => p.voted).length}</span> votes so far this year.</div>`  
+              
+            const votedProposals = proposals.filter(p => p.voted)  
+              
+            votedProposals.forEach(p => {  
+                const div = document.createElement('div')  
+                div.className = "border border-white/10 rounded-3xl p-8 flex justify-between items-center"  
+                div.innerHTML = `  
+                    <div>  
+                        <h4 class="text-xl">${p.title}</h4>  
+                        <p class="text-sm text-[#00ff9d] mt-1">You voted <span class="uppercase">${p.voteChoice}</span></p>  
+                    </div>  
+                    <div class="text-right">  
+                        <div class="text-xs">Final result</div>  
+                        <div class="text-4xl font-semibold">${Math.round(p.yes / (p.yes + p.no + p.abstain) * 100)}% YES</div>  
+                    </div>  
+                `  
+                container.appendChild(div)  
+            })  
+              
+            if (votedProposals.length === 0 && myVotes.length === 0) {  
+                container.innerHTML += `<p class="mt-12 text-gray-400">No votes yet. Time to shape the future!</p>`  
+            }  
+        }  
+  
+        // Show single proposal modal  
+        let currentModalProposal = null  
+        let modalChartInstance = null  
+          
+        function showProposalModal(id) {  
+            currentModalProposal = proposals.find(p => p.id === id)  
+            if (!currentModalProposal) return  
+              
+            const modal = document.getElementById('modal-backdrop')  
+            modal.classList.remove('hidden')  
+            modal.classList.add('flex')  
+              
+            document.getElementById('modal-title').textContent = currentModalProposal.title  
+            document.getElementById('modal-description').innerHTML = `<p class="text-lg">${currentModalProposal.description}</p>`  
+            document.getElementById('modal-voters').textContent = (currentModalProposal.yes + currentModalProposal.no + currentModalProposal.abstain).toLocaleString()  
+              
+            // Fake time remaining  
+            document.getElementById('modal-time').textContent = "41h 12m"  
+              
+            // Render comments  
+            const commentsContainer = document.getElementById('modal-comments')  
+            commentsContainer.innerHTML = ''  
+            currentModalProposal.comments.forEach(c => {  
+                const cEl = document.createElement('div')  
+                cEl.className = "flex gap-x-4"  
+                cEl.innerHTML = `  
+                    <div class="w-8 h-8 bg-white/10 rounded-2xl flex-shrink-0"></div>  
+                    <div class="flex-1">  
+                        <div class="flex justify-between"><span class="font-medium">${c.user}</span><span class="text-xs text-gray-400">${c.time}</span></div>  
+                        <p>${c.text}</p>  
+                    </div>  
+                `  
+                commentsContainer.appendChild(cEl)  
+            })  
+              
+            // Chart  
+            const ctx = document.getElementById('modal-chart')  
+            if (modalChartInstance) modalChartInstance.destroy()  
+              
+            modalChartInstance = new Chart(ctx, {  
+                type: 'doughnut',  
+                data: {  
+                    labels: ['Yes', 'No', 'Abstain'],  
+                    datasets: [{  
+                        data: [currentModalProposal.yes, currentModalProposal.no, currentModalProposal.abstain],  
+                        backgroundColor: ['#00ff9d', '#ff3b5c', '#666'],  
+                        borderColor: '#111',  
+                        borderWidth: 6  
+                    }]  
+                },  
+                options: {  
+                    cutout: '82%',  
+                    plugins: { legend: { display: false } }  
+                }  
+            })  
+        }  
+          
+        function hideModal() {  
+            const modal = document.getElementById('modal-backdrop')  
+            modal.classList.add('hidden')  
+            modal.classList.remove('flex')  
+            if (modalChartInstance) modalChartInstance.destroy()  
+            currentModalProposal = null  
+        }  
+          
+        function castVote(choice) {  
+            if (!currentModalProposal) return  
+              
+            // Record vote  
+            currentModalProposal.voted = true  
+            currentModalProposal.voteChoice = choice  
+              
+            if (choice === 'yes') currentModalProposal.yes++  
+            else if (choice === 'no') currentModalProposal.no++  
+            else currentModalProposal.abstain++  
+              
+            // Add to my votes  
+            myVotes.push({  
+                id: currentModalProposal.id,  
+                title: currentModalProposal.title,  
+                choice: choice,  
+                date: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'})  
+            })  
+              
+            hideModal()  
+              
+            // Refresh UI  
+            renderTrending()  
+            renderProposals()  
+            renderMyVotes()  
+              
+            // Toast  
+            showToast(`Vote recorded: ${choice.toUpperCase()}. Thank you, citizen!`)  
+        }  
+          
+        function showToast(msg) {  
+            const toast = document.createElement('div')  
+            toast.style.cssText = 'position:fixed; bottom:24px; left:24px; background:#00ff9d; color:#000; padding:16px 24px; border-radius:9999px; font-weight:600; box-shadow:0 10px 15px -3px rgb(0 255 157);'  
+            toast.textContent = msg  
+            document.body.appendChild(toast)  
+            setTimeout(() => toast.remove(), 2800)  
+        }  
+          
+        function submitProposal(e) {  
+            e.preventDefault()  
+              
+            const title = document.getElementById('prop-title').value  
+            const category = document.getElementById('prop-category').value.toLowerCase()  
+            const text = document.getElementById('prop-text').value  
+              
+            const newProposal = {  
+                id: Date.now(),  
+                title: title,  
+                category: category,  
+                description: text,  
+                yes: 12,  
+                no: 3,  
+                abstain: 1,  
+                voted: false,  
+                voteChoice: null,  
+                comments: []  
+            }  
+              
+            proposals.unshift(newProposal)  
+              
+            // Reset form  
+            document.getElementById('submit-form').reset()  
+              
+            hideModal() // just in case  
+            navigate(1) // go to proposals  
+            renderProposals()  
+            renderTrending()  
+              
+            showToast('Proposal published! It’s now open for signatures.')  
+        }  
+          
+        function filterProposals(cat) {  
+            // Simple active state toggle  
+            document.querySelectorAll('#screen-1 button').forEach(b => b.classList.remove('active-filter', 'border-[#00ff9d]', 'text-[#00ff9d]'))  
+            event.currentTarget.classList.add('active-filter', 'border-[#00ff9d]', 'text-[#00ff9d]')  
+            renderProposals(cat)  
+        }  
+          
+        function navigate(screen) {  
+            // Hide all screens  
+            document.querySelectorAll('div[id^="screen-"]').forEach(s => s.classList.add('hidden'))  
+            // Show requested  
+            document.getElementById(`screen-${screen}`).classList.remove('hidden')  
+              
+            // Update nav  
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('text-[#00ff9d]'))  
+            const activeNav = document.getElementById(`nav-${screen}`)  
+            if (activeNav) activeNav.classList.add('text-[#00ff9d]')  
+              
+            // Refresh data if needed  
+            if (screen === 1) renderProposals()  
+            if (screen === 2) renderMyVotes()  
+        }  
+          
+        function delegateDemo() {  
+            showToast("Delegation portal opened (demo). You now control 4,291 extra votes.")  
+            // In real app this would open liquid democracy delegation UI  
+        }  
+          
+        function showAISummary() {  
+            const msg = "AI BRIEF: The high-speed rail proposal would reduce national CO₂ by 18% and create 340,000 jobs. 73% of economists support it. Potential downside: eminent domain concerns in rural areas."  
+            showToast(msg)  
+        }  
+          
+        function logout() {  
+            if (confirm("Logout from direct democracy? Your votes remain on-chain forever.")) {  
+                location.reload()  
+            }  
+        }  
+          
+        // Initialize the entire app  
+        function launchVoxPopuli() {  
+            initTailwind()  
+            renderTrending()  
+            renderProposals()  
+            renderMyVotes()  
+              
+            console.log('%c🚀 VoxPopuli prototype ready. You just ran direct democracy in your browser.', 'color:#00ff9d; font-family:monospace')  
+            console.log('This is a fully functional single-file demo that replaces representative government with direct citizen voting, liquid delegation, AI policy summaries, and immutable on-chain results (simulated).')  
+              
+            // Real version would use:  
+            // • Blockchain (Polygon/ZK-rollups) for tamper-proof votes  
+            // • Civic biometric + zero-knowledge ID verification  
+            // • Liquid democracy delegation engine  
+            // • AI deliberation tools (like Polis + Grok summaries)  
+            // • End-to-end verifiable voting  
+        }  
+          
+        // BOOM — launch it  
+        window.onload = launchVoxPopuli  
+    </script>  
+    <!-- Visible copyright footer -->
+    <footer class="text-center text-xs text-gray-500 py-8 border-t border-white/10 mt-20">
+        © 2026 Shane L Yeman. All rights reserved. VoxPopuli • Direct Democracy Platform
+    </footer>
+</body>  
+</html>  
