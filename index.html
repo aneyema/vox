@@ -12,6 +12,10 @@ This code is protected by copyright law. Unauthorized copying, modification, or 
     <title>VoxPopuli • Direct Democracy</title>  
     <script src="https://cdn.tailwindcss.com"></script>  
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>  
+   <script const supabaseUrl = 'https://rfczeoaxsprmrerklutz.supabase.co';   // ← Replace with yours
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmY3plb2F4c3BybXJlcmtsdXR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MzI0MDMsImV4cCI6MjA5MzUwODQwM30.5IGTvpFdlfu6IT-UXhM4gsa8dwSsryG5Zd3Z9izyUtA';               // ← Replace with yours
+
+const supabase = Supabase.createClient(supabaseUrl, supabaseAnonKey);
     <style>  
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');  
         :root {  
@@ -603,7 +607,41 @@ This code is protected by copyright law. Unauthorized copying, modification, or 
               
             console.log('%c🚀 VoxPopuli prototype ready. You just ran direct democracy in your browser.', 'color:#00ff9d; font-family:monospace')  
             console.log('This is a fully functional single-file demo that replaces representative government with direct citizen voting, liquid delegation, AI policy summaries, and immutable on-chain results (simulated).')  
-              
+// ====================== SUPABASE CONFIGURATION ======================
+const supabaseUrl = 'https://rfczeoaxsprmrerklutz.supabase.co';     // ← CHANGE THIS
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmY3plb2F4c3BybXJlcmtsdXR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MzI0MDMsImV4cCI6MjA5MzUwODQwM30.5IGTvpFdlfu6IT-UXhM4gsa8dwSsryG5Zd3Z9izyUtA';                  // ← CHANGE THIS
+
+const supabase = Supabase.createClient(supabaseUrl, supabaseAnonKey);
+// Updated Login Function with Supabase
+async function attemptLogin() {
+    const usernameInput = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!usernameInput || !password) {
+        alert("Please enter username and password");
+        return;
+    }
+
+    const email = usernameInput.includes('@') ? usernameInput : usernameInput + "@example.com";
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+        console.error(error);
+        alert("Login failed: " + error.message + "\n\nNote: You may need to create an account first in Supabase.");
+    } else {
+        console.log("✅ Supabase Login Successful!", data.user);
+        completeLogin();
+    }
+}
+// Optional: Listen for auth changes
+supabase.auth.onAuthStateChange((event, session) => {
+    console.log('Auth changed:', event, session?.user?.email);
+});
+// ===================================================================
             // Real version would use:  
             // • Blockchain (Polygon/ZK-rollups) for tamper-proof votes  
             // • Civic biometric + zero-knowledge ID verification  
@@ -613,6 +651,7 @@ This code is protected by copyright law. Unauthorized copying, modification, or 
         }  
           
         // BOOM — launch it  
+    
         window.onload = launchVoxPopuli  
     </script>  
     <!-- Visible copyright footer -->
